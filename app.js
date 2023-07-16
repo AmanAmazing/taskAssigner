@@ -1,67 +1,6 @@
 const express = require("express")
 require('dotenv').config()
 
-// database
-const mongoose = require("mongoose")
-mongoose.connect(process.env.DATABASE_URI)
-
-const employeeSchema = new mongoose.Schema({
-    firstName: {
-        type:String,
-        required:true,
-    },
-    lastName: {
-        type:String,
-        required:true,
-    },
-    phoneNumber: {
-        type:Number,
-        required:true,
-    },
-    emailAddress:{
-        type:String,
-        required:true
-    }
-}) 
-
-const groupSchema = new mongoose.Schema({
-    name: {
-        type:String,
-        required:true,
-        unique:true,
-        lowercase:true
-    },
-    contacts: {
-        type: [employeeSchema]
-    }
-})
-
-const organisationSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required:true,
-        unique:true,
-        lowercase: true
-    }, 
-    email: String, 
-    password: String,
-    groups: [groupSchema],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type:Date,
-        default:Date.now
-    }
-})
-
-const Organisation = new mongoose.model("Organisation",organisationSchema)
-const Group = new mongoose.model("Group",groupSchema)
-const Employee = new mongoose.model("Employee",employeeSchema)
-
-// end of database code 
-
 const PORT  = process.env.PORT || 3000 
 const app = express()
 app.use(express.urlencoded({extended:true}))
@@ -69,10 +8,47 @@ app.use(express.json())
 app.set("view engine","ejs")
 app.set(express.static("views"))
 
+// database
+const mongoose = require("mongoose")
+mongoose.connect(process.env.DATABASE_URI).then(()=>{
+    console.log("connected to the database")
+}).catch((err)=>{
+    console.log("An error occurred connecting to the database")
+})
+const {Employee,Group,Organisation} = require("./models.js")
+// end of database code 
+
 
 
 app.get("/",(req,res)=>{
     res.send('<h1> Welcome ot the app!</h1>')
+})
+
+app.get("/login",(req,res)=>{
+    res.render("public/login")
+})
+
+async function checkUser(email, password){
+    try {
+        const user = await Organisation.findOne({email:email})
+        if (Object.is(user,null)){
+            console.log("null user found")
+        }
+        console.log(user.name)
+        if (user.password === password){
+            console.log("password matched")
+        }
+    }catch (e){
+        console.log(e.message)
+    }
+
+}
+
+app.post("/loginUser",(req,res)=>{
+    const email  = req.body.email
+    const password = req.body.password
+
+    checkUser(email, password)
 })
 
 app.get("/register",(req,res)=>{
@@ -80,6 +56,9 @@ app.get("/register",(req,res)=>{
 })
 
 app.post("/registerUser",(req,res)=>{
+    
+
+
     const newOrg = new Organisation({
         name: req.body.organisation,
         email: req.body.email,
@@ -91,7 +70,7 @@ app.post("/registerUser",(req,res)=>{
           })
           .catch((err)=>{
               res.send(err);
-          })
+          });
 })
 
 
