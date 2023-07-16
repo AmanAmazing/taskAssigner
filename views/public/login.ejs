@@ -6,7 +6,9 @@
 </head>
 <body>
    <h1>Admin login page</h1> 
-   <form action="/loginUser" method="post">
+   <form action="/login" method="post">
+       <label for="organisation">Organisation:</label> 
+       <input type="text" id="organisation" name="organisation" required />
        <label for="email">Email Address:</label>
        <input type="email" id="email" name="email" required />
        <label for="password">Password:</label>

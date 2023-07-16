@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const passportLocalMongoose = require("passport-local-mongoose")
 
 const employeeSchema = new mongoose.Schema({
     firstName: {
@@ -60,6 +61,8 @@ const organisationSchema = new mongoose.Schema({
         default:Date.now
     }
 })
+
+organisationSchema.plugin(passportLocalMongoose, {usernameField:'email'}); // used for hashing, salting, saving users
 
 organisationSchema.pre('save',function(next){
     this.updatedAt = Date.now()
